@@ -1,0 +1,3 @@
+# GPU mode additionally needs a compatible CUDA-enabled PyTorch installation,
+# CUDA toolkit, C++ compiler, Triton, NumPy and Ninja; see README.md.
+torch

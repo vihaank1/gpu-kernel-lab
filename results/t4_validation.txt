@@ -1,0 +1,77 @@
+PASS | manual backward | N=1
+PASS | manual backward | N=7
+PASS | manual backward | N=33
+
+Precision: rounded inputs then FP32 arithmetic; original FP64 reference
+Dtype   Total maximum error   Relative L2
+FP32    3.757770e-07           1.227146e-07
+FP16    9.513142e-04           2.810623e-04
+BF16    4.797894e-03           2.165303e-03
+
+Compatibility test on pre-Ampere GPU; correctness must pass before timing
+GPU: Tesla T4 CC: (7, 5)
+Torch: 2.11.0+cu130 Triton: 3.6.0 CUDA: 13.0
+PASS | fused forward cuda | (1, 1, 16, 8)
+PASS | fused forward cuda | (7, 7, 16, 8)
+PASS | fused forward cuda | (17, 33, 32, 16)
+PASS | fused forward cuda | (31, 45, 29, 13)
+PASS | fused forward cuda | uniform scores, q=0.0
+PASS | fused forward cuda | uniform scores, q=100.0
+PASS | fused causal forward cuda | N=1
+PASS | fused causal forward cuda | N=7
+PASS | fused causal forward cuda | N=33
+PASS | CUDA add | N=0
+PASS | CUDA add | N=1
+PASS | CUDA add | N=4
+PASS | CUDA add | N=255
+PASS | CUDA add | N=256
+PASS | CUDA add | N=257
+PASS | CUDA add | N=1000
+PASS | CUDA add | N=1000003
+PASS | CUDA add | non-default stream
+add N=4 PyTorch: 6.784 us
+add N=4 CUDA: 4.304 us
+add N=1000 PyTorch: 4.640 us
+add N=1000 CUDA: 4.288 us
+add N=1000003 PyTorch: 55.296 us
+add N=1000003 CUDA: 52.224 us
+attention FP32 N=128 explicit PyTorch: 22.560 us
+attention FP32 N=128 fused teaching kernel: 23.200 us
+attention FP32 N=128 PyTorch SDPA default: 34.224 us
+attention FP32 N=512 explicit PyTorch: 42.912 us
+attention FP32 N=512 fused teaching kernel: 116.736 us
+attention FP32 N=512 PyTorch SDPA default: 108.224 us
+attention FP32 N=1024 explicit PyTorch: 141.280 us
+attention FP32 N=1024 fused teaching kernel: 428.032 us
+attention FP32 N=1024 PyTorch SDPA default: 190.656 us
+/usr/local/lib/python3.13/dist-packages/torch/profiler/profiler.py:224: UserWarning: Warning: Profiler clears events at the end of each cycle.Only events from the current cycle will be reported.To keep events across cycles, set acc_events=True.
+  _warn_once(
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                                                   Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg     Self CUDA   Self CUDA %    CUDA total  CUDA time avg       CPU Mem  Self CPU Mem      CUDA Mem  Self CUDA Mem    # of Calls  
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                                                 kernel         0.00%       0.000us         0.00%       0.000us       0.000us       5.777ms        62.69%       5.777ms       1.155ms           0 B           0 B           0 B           0 B             5  
+                                  fused teaching kernel         0.00%       0.000us         0.00%       0.000us       0.000us       5.777ms        62.69%       5.777ms       1.155ms           0 B           0 B           0 B           0 B             5  
+                                       explicit PyTorch         0.00%       0.000us         0.00%       0.000us       0.000us       4.531ms        49.16%       4.531ms     906.137us           0 B           0 B           0 B           0 B             5  
+                     aten::_efficient_attention_forward         0.60%     119.543us         1.52%     303.286us      60.657us       2.233ms        24.23%       2.233ms     446.586us          80 B           0 B       1.25 MB           0 B             5  
+fmha_cutlassF_f32_aligned_64x64_rf_sm75(PyTorchMemEf...         0.00%       0.000us         0.00%       0.000us       0.000us       2.233ms        24.23%       2.233ms     446.586us           0 B           0 B           0 B           0 B             5  
+                                   PyTorch SDPA default         0.00%       0.000us         0.00%       0.000us       0.000us       2.233ms        24.23%       2.233ms     446.586us           0 B           0 B           0 B           0 B             5  
+                                               aten::mm         6.51%       1.301ms        28.67%       5.732ms     573.187us     863.892us         9.37%     947.539us      94.754us           0 B           0 B      22.48 MB      22.48 MB            10  
+                         volta_sgemm_64x32_sliced1x4_nn         0.00%       0.000us         0.00%       0.000us       0.000us     446.747us         4.85%     446.747us      89.349us           0 B           0 B           0 B           0 B             5  
+                                  volta_sgemm_128x64_tn         0.00%       0.000us         0.00%       0.000us       0.000us     417.145us         4.53%     417.145us      83.429us           0 B           0 B           0 B           0 B             5  
+                                         aten::_softmax         0.42%      84.504us         0.70%     139.276us      27.855us     171.708us         1.86%     171.708us      34.342us           0 B           0 B      21.23 MB      21.23 MB             5  
+void (anonymous namespace)::softmax_warp_forward<flo...         0.00%       0.000us         0.00%       0.000us       0.000us     171.708us         1.86%     171.708us      34.342us           0 B           0 B           0 B           0 B             5  
+                                              aten::div         0.84%     167.764us         1.13%     226.543us      45.309us     169.821us         1.84%     169.821us      33.964us           0 B           0 B      20.00 MB      20.00 MB             5  
+void at::native::vectorized_elementwise_kernel<4, at...         0.00%       0.000us         0.00%       0.000us       0.000us     169.821us         1.84%     169.821us      33.964us           0 B           0 B           0 B           0 B             5  
+                                Activity Buffer Request        11.28%       2.255ms        11.28%       2.255ms       2.255ms      83.647us         0.91%      83.647us      83.647us           0 B           0 B           0 B           0 B             1  
+                                       explicit PyTorch        17.79%       3.556ms        56.54%      11.304ms       2.261ms       0.000us         0.00%       1.289ms     257.814us           0 B           0 B           0 B     -63.70 MB             5  
+                                        aten::transpose         0.60%     119.960us         0.75%     149.659us       5.986us       0.000us         0.00%       0.000us       0.000us           0 B           0 B           0 B           0 B            25  
+                                       aten::as_strided         0.36%      72.660us         0.36%      72.660us       1.118us       0.000us         0.00%       0.000us       0.000us           0 B           0 B           0 B           0 B            65  
+                                           aten::matmul         0.22%      44.550us        28.89%       5.776ms     577.642us       0.000us         0.00%     947.539us      94.754us           0 B           0 B      22.48 MB           0 B            10  
+          cudaOccupancyMaxActiveBlocksPerMultiprocessor         0.13%      26.975us         0.13%      26.975us       5.395us       0.000us         0.00%       0.000us       0.000us           0 B           0 B           0 B           0 B             5  
+                                       cudaLaunchKernel        11.70%       2.340ms        11.70%       2.340ms      93.604us       0.000us         0.00%       0.000us       0.000us           0 B           0 B           0 B           0 B            25  
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+Self CPU time total: 19.993ms
+Self CUDA time total: 9.216ms
+
+Saved attention_gpu_trace.json; timings above exclude profiler overhead.
+For hardware counters, run Nsight Compute on the attention kernel separately.
