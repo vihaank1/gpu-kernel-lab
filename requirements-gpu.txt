@@ -1,0 +1,5 @@
+# Install the cu130 torch wheel first (README). Keep pip from switching builds.
+torch==2.11.0+cu130
+triton==3.6.0
+numpy>=1.26,<3
+ninja>=1.11,<2
